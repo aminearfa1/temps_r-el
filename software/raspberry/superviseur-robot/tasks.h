@@ -65,8 +65,12 @@ private:
     ComMonitor monitor;
     ComRobot robot;
     Camera camera;
-
-    int start_with_WD;
+    int periodicOk = 1;
+    int position = 0;
+    Arena arena;
+    int arenaConfirm = -1;
+    
+    int start_with_WD = 0;
     int robotStarted = 0;
     int move = MESSAGE_ROBOT_STOP;
     
@@ -76,17 +80,17 @@ private:
     RT_TASK th_server;
     RT_TASK th_sendToMon;
     RT_TASK th_receiveFromMon;
+    RT_TASK th_closeComMon;
     RT_TASK th_openComRobot;
+    RT_TASK th_closeComRobot;
     RT_TASK th_startRobot;
     RT_TASK th_move;
     RT_TASK th_battery;
-    RT_TASK th_closeComMon;
-    RT_TASK th_closeComRobot;
     RT_TASK th_startCamera;
     RT_TASK th_periodicImage;
     RT_TASK th_watchdog;
-
-    
+    RT_TASK th_closeCamera;
+    RT_TASK th_calibration;
     /**********************************************************************/
     /* Mutex                                                              */
     /**********************************************************************/
@@ -96,8 +100,10 @@ private:
     RT_MUTEX mutex_move;
     RT_MUTEX mutex_camera;
     RT_MUTEX mutex_watchdog;
-
-
+    RT_MUTEX mutex_periodicImage;
+    RT_MUTEX mutex_position;
+    RT_MUTEX mutex_arena;
+    RT_MUTEX mutex_arenaConfirm;
     /**********************************************************************/
     /* Semaphores                                                         */
     /**********************************************************************/
@@ -110,6 +116,8 @@ private:
     RT_SEM sem_startCamera;
     RT_SEM sem_periodicImage;
     RT_SEM sem_watchdog;
+    RT_SEM sem_closeCamera;
+    RT_SEM sem_calibration;
 
     /**********************************************************************/
     /* Message queues                                                     */
@@ -134,45 +142,62 @@ private:
      * @brief Thread receiving data from monitor.
      */
     void ReceiveFromMonTask(void *arg);
-        /**
+    
+     /**
      * @brief Thread closing communications with monitor.
      */
     void CloseComMon(void *arg);
-
+    
     /**
      * @brief Thread opening communication with the robot.
      */
     void OpenComRobot(void *arg);
+    
      /**
      * @brief Thread closing communication with the robot.
      */
     void CloseComRobot(void *arg);
+
     /**
      * @brief Thread starting the communication with the robot.
      */
     void StartRobotTask(void *arg);
-      /**
+    
+    /**
      * @brief Thread starting watchdog for startRobotWithWD.
      */
     void WatchdogTask(void *arg);
+    
     /**
      * @brief Thread handling control of the robot.
      */
     void MoveTask(void *arg);
-      /**
+    
+    /**
     * @brief Thread handling control of the battery level
     */
     void BatteryTask(void *arg);
+    
     /**
     * @brief Thread handling the start of the Camera
     */
     void StartCameraTask(void *arg);
-
+    
+    /**
+    * @brief Thread handling the closing of the Camera
+    */
+    void CloseCameraTask(void *arg);
+    
     /**
     * @brief Thread handling the sending of a periodic image to the monitor
     */
     void PeriodicImageTask(void *arg);
-
+    
+    /**
+    * @brief Thread handling the calibration of the Arena
+    */
+    void CalibrationTask(void *arg);
+    
     /**********************************************************************/
     /* Queue services                                                     */
     /**********************************************************************/
@@ -193,4 +218,3 @@ private:
 };
 
 #endif // __TASKS_H__ 
-
