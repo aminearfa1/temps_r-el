@@ -27,9 +27,9 @@
 #define PRIORITY_TSTARTROBOT 20
 #define PRIORITY_TSTARTCAMERA 35
 #define PRIORITY_TPERIODICIMAGE 26
-#define PRIORITY_TBATTERY 15
-#define PRIORITY_TCLOSECOMROBOT 14
-#define PRIORITY_TCLOSECOMMON 13
+#define PRIORITY_TBATTERY 40
+#define PRIORITY_TCLOSECOMROBOT 31
+#define PRIORITY_TCLOSECOMMON 31
 #define PRIORITY_TWATCHDOG 18
 
 /*
@@ -349,14 +349,16 @@ void Tasks::ReceiveFromMonTask(void *arg) {
         } else if (msgRcv->CompareID(MESSAGE_CAM_OPEN)) {
             rt_sem_v(&sem_startCamera);
         } else if (msgRcv->CompareID(MESSAGE_ROBOT_START_WITHOUT_WD)) {
-            //rt_sem_v(&sem_startRobot);
             rt_mutex_acquire(&mutex_watchdog, TM_INFINITE);
             start_with_WD = 0;
-            rt_mutex_release(&mutex_watchdog);        } else if (msgRcv->CompareID(MESSAGE_ROBOT_START_WITH_WD)) {
-            //rt_sem_v(&sem_startRobot);
+            rt_mutex_release(&mutex_watchdog); 
+            rt_sem_v(&sem_startRobot);
+        } else if (msgRcv->CompareID(MESSAGE_ROBOT_START_WITH_WD)) {
             rt_mutex_acquire(&mutex_watchdog, TM_INFINITE);
             start_with_WD = 1;
-            rt_mutex_release(&mutex_watchdog);        } else if (msgRcv->CompareID(MESSAGE_ROBOT_GO_FORWARD) ||
+            rt_mutex_release(&mutex_watchdog); 
+            rt_sem_v(&sem_startRobot);
+        } else if (msgRcv->CompareID(MESSAGE_ROBOT_GO_FORWARD) ||
                 msgRcv->CompareID(MESSAGE_ROBOT_GO_BACKWARD) ||
                 msgRcv->CompareID(MESSAGE_ROBOT_GO_LEFT) ||
                 msgRcv->CompareID(MESSAGE_ROBOT_GO_RIGHT) ||
@@ -472,12 +474,12 @@ void Tasks::WatchdogTask(void *arg) {
     /**************************************************************************************/
     Message * msgReload;
     int count_WD =3;
-    rt_task_set_periodic(NULL, TM_NOW, 100000000);
+    rt_task_set_periodic(NULL, TM_NOW, 1000000000);
 
     while (count_WD>0) {
         rt_task_wait_period(NULL);
     rt_mutex_acquire(&mutex_robot, TM_INFINITE);
-        msgReload = robot.Write(robot.Ping());
+        msgReload = robot.Write(robot.ReloadWD());
         rt_mutex_release(&mutex_robot);
 
         if(msgReload->GetID() == MESSAGE_ANSWER_ACK){
