@@ -64,6 +64,8 @@ private:
     /**********************************************************************/
     ComMonitor monitor;
     ComRobot robot;
+    Camera camera;
+
     int robotStarted = 0;
     int move = MESSAGE_ROBOT_STOP;
     
@@ -77,7 +79,10 @@ private:
     RT_TASK th_startRobot;
     RT_TASK th_move;
     RT_TASK th_battery;
-
+    RT_TASK th_closeComMon;
+    RT_TASK th_closeComRobot;
+    RT_TASK th_startCamera;
+    RT_TASK th_periodicImage;
     
     /**********************************************************************/
     /* Mutex                                                              */
@@ -86,6 +91,7 @@ private:
     RT_MUTEX mutex_robot;
     RT_MUTEX mutex_robotStarted;
     RT_MUTEX mutex_move;
+    RT_MUTEX mutex_camera;
 
     /**********************************************************************/
     /* Semaphores                                                         */
@@ -94,7 +100,10 @@ private:
     RT_SEM sem_openComRobot;
     RT_SEM sem_serverOk;
     RT_SEM sem_startRobot;
-
+    RT_SEM sem_closeComMon;
+    RT_SEM sem_closeComRobot;
+    RT_SEM sem_startCamera;
+    RT_SEM sem_periodicImage;
     /**********************************************************************/
     /* Message queues                                                     */
     /**********************************************************************/
@@ -118,12 +127,19 @@ private:
      * @brief Thread receiving data from monitor.
      */
     void ReceiveFromMonTask(void *arg);
-    
+        /**
+     * @brief Thread closing communications with monitor.
+     */
+    void CloseComMon(void *arg);
+
     /**
      * @brief Thread opening communication with the robot.
      */
     void OpenComRobot(void *arg);
-
+     /**
+     * @brief Thread closing communication with the robot.
+     */
+    void CloseComRobot(void *arg);
     /**
      * @brief Thread starting the communication with the robot.
      */
@@ -137,6 +153,15 @@ private:
     * @brief Thread handling control of the battery level
     */
     void BatteryTask(void *arg);
+    /**
+    * @brief Thread handling the start of the Camera
+    */
+    void StartCameraTask(void *arg);
+
+    /**
+    * @brief Thread handling the sending of a periodic image to the monitor
+    */
+    void PeriodicImageTask(void *arg);
 
     /**********************************************************************/
     /* Queue services                                                     */
