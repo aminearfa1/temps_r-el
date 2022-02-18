@@ -66,6 +66,7 @@ private:
     ComRobot robot;
     Camera camera;
 
+    int start_with_WD;
     int robotStarted = 0;
     int move = MESSAGE_ROBOT_STOP;
     
@@ -83,6 +84,8 @@ private:
     RT_TASK th_closeComRobot;
     RT_TASK th_startCamera;
     RT_TASK th_periodicImage;
+    RT_TASK th_watchdog;
+
     
     /**********************************************************************/
     /* Mutex                                                              */
@@ -92,6 +95,8 @@ private:
     RT_MUTEX mutex_robotStarted;
     RT_MUTEX mutex_move;
     RT_MUTEX mutex_camera;
+    RT_MUTEX mutex_watchdog;
+
 
     /**********************************************************************/
     /* Semaphores                                                         */
@@ -104,6 +109,8 @@ private:
     RT_SEM sem_closeComRobot;
     RT_SEM sem_startCamera;
     RT_SEM sem_periodicImage;
+    RT_SEM sem_watchdog;
+
     /**********************************************************************/
     /* Message queues                                                     */
     /**********************************************************************/
@@ -144,7 +151,10 @@ private:
      * @brief Thread starting the communication with the robot.
      */
     void StartRobotTask(void *arg);
-    
+      /**
+     * @brief Thread starting watchdog for startRobotWithWD.
+     */
+    void WatchdogTask(void *arg);
     /**
      * @brief Thread handling control of the robot.
      */
